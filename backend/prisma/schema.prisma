@@ -1,0 +1,122 @@
+// FitFlow Database Schema
+// Author: Omindu Ayodya
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  firebaseUid   String?  @unique @map("firebase_uid")
+  fitnessLevel  String?  @map("fitness_level")
+  heightCm      Decimal? @map("height_cm") @db.Decimal(5, 2)
+  weightKg      Decimal? @map("weight_kg") @db.Decimal(5, 2)
+  dateOfBirth   DateTime? @map("date_of_birth")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  workouts      Workout[]
+  nutritionLogs NutritionLog[]
+  challenges    ChallengeParticipant[]
+
+  @@map("users")
+}
+
+model Workout {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  title             String
+  description       String?
+  durationMinutes   Int?     @map("duration_minutes")
+  estimatedCalories Int?     @map("estimated_calories")
+  difficulty        String?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  user              User     @relation(fields: [userId], references: [id])
+  exercises         WorkoutExercise[]
+
+  @@map("workouts")
+}
+
+model Exercise {
+  id           String   @id @default(uuid())
+  name         String
+  muscleGroup  String?  @map("muscle_group")
+  equipment    String?
+  difficulty   String?
+  instructions String?
+  imageUrl     String?  @map("image_url")
+
+  workouts     WorkoutExercise[]
+
+  @@map("exercises")
+}
+
+model WorkoutExercise {
+  id           String @id @default(uuid())
+  workoutId    String @map("workout_id")
+  exerciseId   String @map("exercise_id")
+  sets         Int?
+  reps         Int?
+  restSeconds  Int?   @map("rest_seconds")
+
+  workout      Workout  @relation(fields: [workoutId], references: [id])
+  exercise     Exercise @relation(fields: [exerciseId], references: [id])
+
+  @@map("workout_exercises")
+}
+
+model NutritionLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  mealType  String?  @map("meal_type")
+  foodName  String   @map("food_name")
+  calories  Int
+  proteinG  Decimal? @map("protein_g") @db.Decimal(6, 2)
+  carbsG    Decimal? @map("carbs_g") @db.Decimal(6, 2)
+  fatG      Decimal? @map("fat_g") @db.Decimal(6, 2)
+  fiberG    Decimal? @map("fiber_g") @db.Decimal(6, 2)
+  imageUrl  String?  @map("image_url")
+  loggedAt  DateTime @default(now()) @map("logged_at")
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("nutrition_logs")
+}
+
+model Challenge {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  goalType    String   @map("goal_type")
+  goalValue   Int      @map("goal_value")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  participants ChallengeParticipant[]
+
+  @@map("challenges")
+}
+
+model ChallengeParticipant {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  challengeId String   @map("challenge_id")
+  progress    Int      @default(0)
+  rank        Int?
+  joinedAt    DateTime @default(now()) @map("joined_at")
+
+  user        User      @relation(fields: [userId], references: [id])
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+
+  @@unique([userId, challengeId])
+  @@map("challenge_participants")
+}
