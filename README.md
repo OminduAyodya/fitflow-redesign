@@ -171,7 +171,7 @@ uvicorn main:app --reload
 | **Module** | IT3060 – Human Computer Interaction |
 | **Lab** | Lab Exercise 05 |
 | **Topic** | Technology Stack Evaluation & System Architecture |
-| **GitHub** | [@OminduA](https://github.com/OminduAyodya/fitflow-redesign.git) |
+| **GitHub** | [@OminduA](https://github.com/OminduAyodya) |
 
 ---
 
